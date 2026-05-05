@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Vega · Usage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #181818;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #f0ede8;
+      --muted: rgba(240,237,232,0.45);
+      --hint: rgba(240,237,232,0.25);
+      --accent: #a8f0c6;
+      --accent2: #7dd3b0;
+      --warn: #f5c66b;
+      --danger: #f07070;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    #root { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .header {
+      padding: 2rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+    .header-logo { font-family: var(--mono); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; }
+    .header-slash { color: var(--hint); font-size: 0.75rem; }
+    .header-title { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); letter-spacing: 0.05em; }
+
+    .main { flex: 1; }
+    .dash { padding: 1.5rem; max-width: 480px; margin: 0 auto; }
+
+    .period-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .period-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+
+    .refresh-btn {
+      background: none; border: 1px solid var(--border2); border-radius: 6px;
+      padding: 0.35rem 0.75rem; font-family: var(--mono); font-size: 0.65rem;
+      color: var(--muted); cursor: pointer; letter-spacing: 0.08em;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .refresh-btn:hover { border-color: var(--accent2); color: var(--accent); }
+    .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr; gap: 1px;
+      background: var(--border); border-radius: 12px; overflow: hidden;
+      margin-bottom: 1.5rem; border: 1px solid var(--border);
+    }
+    .hero-card { background: var(--surface); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .hero-card:first-child { border-radius: 12px 12px 0 0; }
+    .hero-card:last-child  { border-radius: 0 0 12px 12px; }
+    .hero-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+    .hero-value { font-family: var(--mono); font-size: 2.2rem; font-weight: 300; letter-spacing: -0.02em; line-height: 1; }
+    .hero-value.accent { color: var(--accent); }
+    .hero-sub { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); margin-top: 0.1rem; }
+
+    .budget-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+    .budget-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.85rem; }
+    .budget-track { height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem; }
+    .budget-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+    .budget-fill.low  { background: var(--accent); }
+    .budget-fill.mid  { background: var(--warn); }
+    .budget-fill.high { background: var(--danger); }
+    .budget-sub-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.65rem; color: var(--hint); }
+
+    .breakdown { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+    .breakdown-title { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; margin-bottom: 1rem; }
+    .model-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .model-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .model-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .model-name { font-family: var(--mono); font-size: 0.72rem; color: var(--text); flex: 1; }
+    .model-cost { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    .model-bar-wrap { flex: 0 0 60px; height: 2px; background: var(--border2); border-radius: 1px; }
+    .model-bar { height: 100%; border-radius: 1px; }
+
+    .status-msg { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: center; padding: 4rem 1.5rem; line-height: 1.8; }
+    .status-msg.error { color: var(--danger); }
+
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 0.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .pulse { display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s ease-in-out infinite; margin-right: 0.5rem; vertical-align: middle; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+    .timestamp { font-family: var(--mono); font-size: 0.6rem; color: var(--hint); text-align: center; margin-bottom: 2rem; }
+
+    @media (max-width: 380px) { .hero-value { font-size: 1.8rem; } }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const MODEL_COLORS = ['#a8f0c6','#7dd3b0','#4db89a','#888780','#5f9ea0','#8fbc8f'];
+
+function fmtTokens(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return String(n);
+}
+function fmtCost(cents) {
+  const d = cents / 100;
+  return '$' + (d >= 100 ? d.toFixed(0) : d.toFixed(2));
+}
+function daysUntilReset() {
+  const now = new Date();
+  const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  const diff = next - now;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days === 0) return hours + 'h';
+  if (days === 1) return '1d ' + hours + 'h';
+  return days + 'd';
+}
+function nextResetDate() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
+    .toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function el(tag, attrs) {
+  const e = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k, v]) => {
+    if (k === 'style' && typeof v === 'object') Object.assign(e.style, v);
+    else if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else e.setAttribute(k, v);
+  });
+  for (let i = 2; i < arguments.length; i++) {
+    const c = arguments[i];
+    if (c == null) continue;
+    if (Array.isArray(c)) c.forEach(x => x != null && e.append(typeof x === 'string' ? document.createTextNode(x) : x));
+    else e.append(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return e;
+}
+function div(cls) {
+  const args = [].slice.call(arguments);
+  args.unshift('div', { class: cls });
+  return el.apply(null, args);
+}
+
+let state = { loading: false, error: null, data: null, fetchedAt: null };
+
+async function fetchUsage() {
+  state.loading = true;
+  state.error = null;
+  render();
+  try {
+    const res = await fetch('/api/usage');
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error || 'Error ' + res.status);
+    state.data = json;
+    state.fetchedAt = new Date();
+  } catch (e) {
+    state.error = e.message;
+  }
+  state.loading = false;
+  render();
+}
+
+function renderDash(data) {
+  const { totalInput, totalOutput, totalCached, totalCostCents, budget, models } = data;
+  const budgetCents = budget * 100;
+  const pct = Math.min((totalCostCents / budgetCents) * 100, 100);
+  const fillClass = pct < 60 ? 'low' : pct < 85 ? 'mid' : 'high';
+  const remaining = budgetCents - totalCostCents;
+  const totalTokens = totalInput + totalOutput;
+  const now = new Date();
+  const monthName = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+    .toLocaleString('default', { month: 'long', year: 'numeric' });
+  const maxCost = (models[0] && models[0].cost) || 1;
+
+  const modelRows = models.map(function(m, i) {
+    const color = MODEL_COLORS[i] || MODEL_COLORS[MODEL_COLORS.length - 1];
+    const barPct = (m.cost / maxCost) * 100;
+    const dot = el('span', { class: 'model-dot', style: { background: color } });
+    const name = el('span', { class: 'model-name' }, m.label);
+    const barWrap = div('model-bar-wrap', el('div', { class: 'model-bar', style: { width: barPct + '%', background: color } }));
+    const cost = el('span', { class: 'model-cost' }, fmtCost(m.cost));
+    return div('model-row', dot, name, barWrap, cost);
+  });
+
+  const refreshBtn = el('button', {
+    class: 'refresh-btn',
+    disabled: state.loading ? '' : null,
+    onClick: fetchUsage,
+  }, state.loading ? '...' : 'refresh');
+
+  const pulseSpan = el('span', { class: 'pulse' });
+
+  const periodBar = div('period-bar',
+    el('span', { class: 'period-label' }, pulseSpan, monthName),
+    refreshBtn
+  );
+
+  const heroGrid = div('hero-grid',
+    div('hero-card',
+      el('p', { class: 'hero-label' }, 'tokens this period'),
+      el('p', { class: 'hero-value' }, fmtTokens(totalTokens)),
+      el('p', { class: 'hero-sub' }, fmtTokens(totalInput) + ' in · ' + fmtTokens(totalOutput) + ' out · ' + fmtTokens(totalCached) + ' cached')
+    ),
+    div('hero-card',
+      el('p', { class: 'hero-label' }, 'cost so far'),
+      el('p', { class: 'hero-value accent' }, fmtCost(totalCostCents)),
+      el('p', { class: 'hero-sub' }, fmtCost(remaining) + ' of $' + budget + ' remaining')
+    ),
+    div('hero-card',
+      el('p', { class: 'hero-label' }, 'billing resets in'),
+      el('p', { class: 'hero-value', style: { fontSize: '2rem' } }, daysUntilReset()),
+      el('p', { class: 'hero-sub' }, 'next period starts ' + nextResetDate())
+    )
+  );
+
+  const budgetFill = el('div', { class: 'budget-fill ' + fillClass, style: { width: pct + '%' } });
+  const budgetSection = div('budget-section',
+    div('budget-header',
+      el('span', { class: 'period-label' }, 'budget'),
+      el('span', { style: { fontFamily: 'var(--mono)', fontSize: '0.72rem', color: 'var(--muted)' } }, pct.toFixed(1) + '%')
+    ),
+    div('budget-track', budgetFill),
+    div('budget-sub-row',
+      el('span', {}, fmtCost(totalCostCents) + ' used'),
+      el('span', {}, '$' + budget + ' limit')
+    )
+  );
+
+  const stamp = state.fetchedAt
+    ? el('p', { class: 'timestamp' }, 'updated ' + state.fetchedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    : null;
+
+  const d = div('dash', periodBar, heroGrid, budgetSection);
+  if (models.length > 0) {
+    d.appendChild(div('breakdown', el('p', { class: 'breakdown-title' }, 'by model'), ...modelRows));
+  }
+  if (stamp) d.appendChild(stamp);
+  return d;
+}
+
+function render() {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+
+  root.appendChild(div('header',
+    el('span', { class: 'header-logo' }, 'Vega'),
+    el('span', { class: 'header-slash' }, '/'),
+    el('span', { class: 'header-title' }, 'usage')
+  ));
+
+  const main = div('main');
+  root.appendChild(main);
+
+  if (state.loading) {
+    main.appendChild(el('p', { class: 'status-msg' }, el('span', { class: 'spinner' }), 'fetching from Anthropic...'));
+    return;
+  }
+  if (state.error) {
+    main.appendChild(el('p', { class: 'status-msg error' }, '⚠ ' + state.error));
+    return;
+  }
+  if (state.data) {
+    main.appendChild(renderDash(state.data));
+  }
+}
+
+render();
+fetchUsage();
+</script>
+</body>
+</html>
