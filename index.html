@@ -132,26 +132,23 @@ function nextResetDate() {
     .toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-function el(tag, attrs) {
+function el(tag, attrs, ...children) {
   const e = document.createElement(tag);
   if (attrs) Object.entries(attrs).forEach(([k, v]) => {
+    if (v == null) return;
     if (k === 'style' && typeof v === 'object') Object.assign(e.style, v);
     else if (k === 'class') e.className = v;
     else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
     else e.setAttribute(k, v);
   });
-  for (let i = 2; i < arguments.length; i++) {
-    const c = arguments[i];
-    if (c == null) continue;
-    if (Array.isArray(c)) c.forEach(x => x != null && e.append(typeof x === 'string' ? document.createTextNode(x) : x));
-    else e.append(typeof c === 'string' ? document.createTextNode(c) : c);
-  }
+  children.flat().forEach(c => {
+    if (c == null) return;
+    e.append(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
   return e;
 }
-function div(cls) {
-  const args = [].slice.call(arguments);
-  args.unshift('div', { class: cls });
-  return el.apply(null, args);
+function div(cls, ...children) {
+  return el('div', { class: cls }, ...children);
 }
 
 let state = { loading: false, error: null, data: null, fetchedAt: null };
@@ -181,8 +178,7 @@ function renderDash(data) {
   const remaining = budgetCents - totalCostCents;
   const totalTokens = totalInput + totalOutput;
   const now = new Date();
-  const monthName = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-    .toLocaleString('default', { month: 'long', year: 'numeric' });
+  const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
   const maxCost = (models[0] && models[0].cost) || 1;
 
   const modelRows = models.map(function(m, i) {
