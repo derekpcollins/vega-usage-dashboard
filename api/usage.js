@@ -47,8 +47,8 @@ export default async function handler(req) {
     });
   }
 
-  const ADMIN_KEY = process.env.ANTHROPIC_ADMIN_KEY;
-  if (!ADMIN_KEY) return json({ error: 'ANTHROPIC_ADMIN_KEY not configured' }, 500);
+  const ADMIN_KEY = process.env.ANTHROPIC_API_KEY;
+  if (!ADMIN_KEY) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 500);
 
   const BUDGET = parseFloat(process.env.VEGA_BUDGET_USD || '100');
 
